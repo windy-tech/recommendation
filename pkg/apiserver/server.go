@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"os"
 
 	language "cloud.google.com/go/language/apiv1"
 	"github.com/gorilla/mux"
@@ -56,10 +57,14 @@ func (a *APIServer) Delete(path string, f func(w http.ResponseWriter, r *http.Re
 
 // Run the aPIAPIServer on it's router
 func (a *APIServer) Run() {
+	port := "8080"
+	if p := os.Getenv("APP_PORT"); p != "" {
+		port = p
+	}
 	a.Router = mux.NewRouter()
 	a.setRouters()
 	a.setLangClient()
-	log.Fatal(http.ListenAndServe("localhost:8080", a.Router))
+	log.Fatal(http.ListenAndServe("localhost:"+port, a.Router))
 }
 
 type RequestHandlerFunction func(db *sql.DB, lang *language.Client, w http.ResponseWriter, r *http.Request)
