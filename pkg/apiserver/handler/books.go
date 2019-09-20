@@ -38,12 +38,12 @@ func GetAllBooks(db *sql.DB, _ *language.Client, w http.ResponseWriter, r *http.
 	respondJSON(w, 200, books)
 }
 
-func getCatagory(content string, lang *language.Client) (string, error) {
+func getCatagory(content string, lang *language.Client) (string, float32, error) {
 	resp, err := text.ClassifyText(context.Background(), lang, content)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
-	return resp.Categories[0].Name, nil
+	return resp.Categories[0].Name, resp.Categories[0].Confidence, nil
 }
 
 func CreateBook(db *sql.DB, lang *language.Client, w http.ResponseWriter, r *http.Request) {
@@ -56,13 +56,14 @@ func CreateBook(db *sql.DB, lang *language.Client, w http.ResponseWriter, r *htt
 		return
 	}
 	defer r.Body.Close()
-	cata, err := getCatagory(book.Content, lang)
+	cata, conf, err := getCatagory(book.Content, lang)
 	if err != nil {
 		log.Println("Failed to use ML")
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	book.Category = cata
+	book.Confidence = conf
 	stmt, err := db.Prepare("INSERT INTO books(name , catagory , confidence, content) values(?,?,?,?)")
 	if err != nil {
 		log.Println("Failed to prepare insterting  to database")
