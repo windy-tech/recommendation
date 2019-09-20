@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
 
 	language "cloud.google.com/go/language/apiv1"
@@ -50,23 +51,27 @@ func CreateBook(db *sql.DB, lang *language.Client, w http.ResponseWriter, r *htt
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&book); err != nil {
+		log.Println("Failed to decode book")
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	defer r.Body.Close()
 	cata, err := getCatagory(book.Content, lang)
 	if err != nil {
+		log.Println("Failed to use ML")
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	book.Category = cata
 	stmt, err := db.Prepare("INSERT INTO books(name , catagory , confidence, content) values(?,?,?,?)")
 	if err != nil {
+		log.Println("Failed to prepare insterting  to database")
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	res, err := stmt.Exec(book.Name, book.Category, book.Confidence, book.Content)
 	if err != nil {
+		log.Println("Failed to instert to database")
 		respondError(w, http.StatusBadRequest, err.Error())
 		return
 	}
