@@ -64,7 +64,7 @@ func (a *APIServer) Run() {
 	a.Router = mux.NewRouter()
 	a.setRouters()
 	a.setLangClient()
-	log.Fatal(http.ListenAndServe("localhost:"+port, a.Router))
+	log.Fatal(http.ListenAndServe(":"+port, a.Router))
 }
 
 type RequestHandlerFunction func(db *sql.DB, lang *language.Client, w http.ResponseWriter, r *http.Request)
