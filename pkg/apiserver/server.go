@@ -67,10 +67,15 @@ func (a *APIServer) Run() {
 	log.Fatal(http.ListenAndServe(":"+port, a.Router))
 }
 
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+}
+
 type RequestHandlerFunction func(db *sql.DB, lang *language.Client, w http.ResponseWriter, r *http.Request)
 
 func (a *APIServer) handleRequest(handler RequestHandlerFunction) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		enableCors(&w)
 		handler(a.DB, a.LangClient, w, r)
 	}
 }
