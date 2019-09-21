@@ -43,7 +43,10 @@ func getCatagory(content string, lang *language.Client) (string, float32, error)
 	if err != nil {
 		return "", 0, err
 	}
-	return resp.Categories[0].Name, resp.Categories[0].Confidence, nil
+	if len(resp.Categories) > 0 {
+		return resp.Categories[0].Name, resp.Categories[0].Confidence, nil
+	}
+	return "unknown", 0, nil
 }
 
 func CreateBook(db *sql.DB, lang *language.Client, w http.ResponseWriter, r *http.Request) {
